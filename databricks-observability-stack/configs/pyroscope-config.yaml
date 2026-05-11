@@ -1,0 +1,11 @@
+server:
+  http_listen_port: 4040
+
+logging:
+  level: info
+
+storage:
+  path: /var/lib/pyroscope
+
+profiling:
+  enabled: true

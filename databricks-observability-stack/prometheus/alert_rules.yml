@@ -1,0 +1,324 @@
+groups:
+  - name: databricks.cluster.alerts
+    rules:
+      - alert: DatabricksClusterDown
+        expr: databricks_cluster_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: databricks
+          component: cluster
+        annotations:
+          summary: "Databricks cluster {{ $labels.cluster_id }} is down"
+          description: "Cluster {{ $labels.cluster_id }} in workspace {{ $labels.workspace }} has been down for more than 1 minute"
+
+      - alert: DatabricksClusterHighCPU
+        expr: databricks_cluster_cpu_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: cluster
+        annotations:
+          summary: "High CPU usage on Databricks cluster {{ $labels.cluster_id }}"
+          description: "CPU usage is {{ $value }}% on cluster {{ $labels.cluster_id }} for more than 5 minutes"
+
+      - alert: DatabricksClusterHighMemory
+        expr: databricks_cluster_memory_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: cluster
+        annotations:
+          summary: "High memory usage on Databricks cluster {{ $labels.cluster_id }}"
+          description: "Memory usage is {{ $value }}% on cluster {{ $labels.cluster_id }} for more than 5 minutes"
+
+      - alert: DatabricksClusterExecutorFailure
+        expr: increase(databricks_cluster_executor_failures_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: databricks
+          component: cluster
+        annotations:
+          summary: "Executor failures detected on cluster {{ $labels.cluster_id }}"
+          description: "{{ $value }} executor failures in the last 5 minutes on cluster {{ $labels.cluster_id }}"
+
+  - name: databricks.job.alerts
+    rules:
+      - alert: DatabricksJobFailure
+        expr: databricks_job_failed == 1
+        for: 0m
+        labels:
+          severity: critical
+          service: databricks
+          component: job
+        annotations:
+          summary: "Databricks job {{ $labels.job_id }} failed"
+          description: "Job {{ $labels.job_id }} in workspace {{ $labels.workspace }} has failed"
+
+      - alert: DatabricksJobHighLatency
+        expr: databricks_job_duration_seconds > 3600
+        for: 10m
+        labels:
+          severity: warning
+          service: databricks
+          component: job
+        annotations:
+          summary: "High latency for Databricks job {{ $labels.job_id }}"
+          description: "Job {{ $labels.job_id }} has been running for {{ $value }} seconds"
+
+      - alert: DatabricksJobQueueTimeout
+        expr: databricks_job_queue_time_seconds > 600
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: job
+        annotations:
+          summary: "Job {{ $labels.job_id }} queued for too long"
+          description: "Job has been in queue for {{ $value }} seconds"
+
+  - name: databricks.pipeline.alerts
+    rules:
+      - alert: DatabricksPipelineFailure
+        expr: databricks_pipeline_failed == 1
+        for: 0m
+        labels:
+          severity: critical
+          service: databricks
+          component: pipeline
+        annotations:
+          summary: "Databricks pipeline {{ $labels.pipeline_name }} failed"
+          description: "Pipeline {{ $labels.pipeline_name }} in workspace {{ $labels.workspace }} has failed"
+
+      - alert: DatabricksStreamingLag
+        expr: databricks_streaming_lag_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: streaming
+        annotations:
+          summary: "Streaming lag detected for {{ $labels.pipeline_name }}"
+          description: "Streaming lag is {{ $value }} seconds for pipeline {{ $labels.pipeline_name }}"
+
+      - alert: DatabricksDeltaLatency
+        expr: databricks_delta_table_latency_seconds > 600
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: delta
+        annotations:
+          summary: "Delta table latency high for {{ $labels.table_name }}"
+          description: "Delta table {{ $labels.table_name }} has {{ $value }} seconds latency"
+
+  - name: databricks.sql.alerts
+    rules:
+      - alert: DatabricksSQLWarehouseDown
+        expr: databricks_sql_warehouse_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: databricks
+          component: sql
+        annotations:
+          summary: "SQL warehouse {{ $labels.warehouse_id }} is down"
+          description: "SQL warehouse {{ $labels.warehouse_id }} has been down for more than 1 minute"
+
+      - alert: DatabricksSQLQueryFailure
+        expr: increase(databricks_sql_query_failures_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: databricks
+          component: sql
+        annotations:
+          summary: "High SQL query failure rate"
+          description: "{{ $value }} SQL query failures in the last 5 minutes on warehouse {{ $labels.warehouse_id }}"
+
+      - alert: DatabricksSQLHighQueryTime
+        expr: databricks_sql_query_duration_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: sql
+        annotations:
+          summary: "Long running SQL query detected"
+          description: "SQL query taking {{ $value }} seconds on warehouse {{ $labels.warehouse_id }}"
+
+  - name: databricks.dbfs.alerts
+    rules:
+      - alert: DatabricksDBFSError
+        expr: increase(databricks_dbfs_errors_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: databricks
+          component: dbfs
+        annotations:
+          summary: "DBFS errors detected"
+          description: "{{ $value }} DBFS errors in the last 5 minutes"
+
+      - alert: DatabricksDBFSHighUsage
+        expr: databricks_dbfs_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: databricks
+          component: dbfs
+        annotations:
+          summary: "High DBFS usage"
+          description: "DBFS usage is {{ $value }}%"
+
+  - name: databricks.unity.catalog.alerts
+    rules:
+      - alert: DatabricksUnityCatalogAccessDenied
+        expr: increase(databricks_unity_catalog_access_denied_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: databricks
+          component: unity_catalog
+        annotations:
+          summary: "Unity Catalog access denied"
+          description: "{{ $value }} access denied events in the last 5 minutes"
+
+      - alert: DatabricksUnityCatalogLatency
+        expr: databricks_unity_catalog_query_duration_seconds > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: databricks
+          component: unity_catalog
+        annotations:
+          summary: "Unity Catalog high latency"
+          description: "Unity Catalog query latency is {{ $value }} seconds"
+
+  - name: databricks.spark.alerts
+    rules:
+      - alert: SparkTaskFailure
+        expr: increase(spark_task_failed_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: databricks
+          component: spark
+        annotations:
+          summary: "High Spark task failure rate"
+          description: "{{ $value }} Spark task failures in the last 5 minutes"
+
+      - alert: SparkStageFailure
+        expr: increase(spark_stage_failed_total[5m]) > 2
+        for: 1m
+        labels:
+          severity: critical
+          service: databricks
+          component: spark
+        annotations:
+          summary: "Spark stage failures detected"
+          description: "{{ $value }} Spark stage failures in the last 5 minutes"
+
+      - alert: SparkGCOverhead
+        expr: spark_gc_time_percent > 20
+        for: 10m
+        labels:
+          severity: warning
+          service: databricks
+          component: spark
+        annotations:
+          summary: "High Spark GC overhead"
+          description: "Spark GC time is {{ $value }}% of execution time"
+
+  - name: databricks.cost.alerts
+    rules:
+      - alert: DatabricksCostSpike
+        expr: databricks_cluster_cost_per_hour > 10
+        for: 15m
+        labels:
+          severity: warning
+          service: databricks
+          component: cost
+        annotations:
+          summary: "High cluster cost detected"
+          description: "Cluster {{ $labels.cluster_id }} cost is ${{ $value }}/hour"
+
+      - alert: DatabricksUnusedCluster
+        expr: databricks_cluster_idle_time_seconds > 3600
+        for: 30m
+        labels:
+          severity: info
+          service: databricks
+          component: cost
+        annotations:
+          summary: "Unused cluster detected"
+          description: "Cluster {{ $labels.cluster_id }} has been idle for {{ $value }} seconds"
+
+  - name: databricks.slo.alerts
+    rules:
+      - alert: DatabricksSLOViolation
+        expr: databricks_job_slo_burn_rate > 1
+        for: 5m
+        labels:
+          severity: critical
+          service: databricks
+          component: slo
+        annotations:
+          summary: "SLO violation detected"
+          description: "SLO burn rate is {{ $value }} for {{ $labels.slo_name }}"
+
+      - alert: DatabricksErrorBudgetExhausted
+        expr: databricks_error_budget_remaining_percent < 10
+        for: 1m
+        labels:
+          severity: critical
+          service: databricks
+          component: slo
+        annotations:
+          summary: "Error budget nearly exhausted"
+          description: "Error budget remaining is {{ $value }}% for {{ $labels.slo_name }}"
+
+  - name: infrastructure.alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}%"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is {{ $value }}% full"
+
+      - alert: ContainerDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Container {{ $labels.job }} is down"
+          description: "Container {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute"

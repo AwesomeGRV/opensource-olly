@@ -1,0 +1,98 @@
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    jaeger:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+    zipkin:
+      endpoint: 0.0.0.0:9411
+
+ingester:
+  max_block_duration: 5m               # cut the headblock when this time passes.
+  lifecycler:
+    ring:
+      replication_factor: 1
+      kvstore:
+        store: inmemory
+  trace_idle_period: 10s                # how long we wait for a trace before flushing it.
+
+compactor:
+  compaction:
+    compaction_window: 1h               # the window within which to search for blocks to compact.
+  retention:
+    enable: true
+    default: 48h                        # overall trace retention.
+
+storage:
+  trace:
+    backend: local                     # backend configuration to use
+    local:
+      path: /tmp/tempo/blocks
+
+metrics_generator:
+  processor:
+    service_graphs:
+      enabled: true
+      dimensions:
+        - source.namespace
+        - source.service
+        - source.span.name
+        - target.namespace
+        - target.service
+        - target.span.name
+    span_metrics:
+      enabled: true
+      dimensions_extra_attributes:
+        - service.version
+        - k8s.pod.name
+        - k8s.namespace.name
+        - k8s.deployment.name
+        - k8s.node.name
+        - k8s.container.name
+        - db.name
+        - db.system
+        - db.statement
+        - db.operation
+        - http.method
+        - http.status_code
+        - http.url
+        - error.type
+        - user.id
+        - user.email
+        - team
+        - environment
+        - cluster_id
+        - job_id
+        - notebook_name
+        - pipeline_name
+        - warehouse_id
+        - workspace
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+overrides:
+  defaults:
+    metrics:
+      span_metrics:
+        histogram:
+          explicit_buckets: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
+      service_graphs:
+        histogram:
+          explicit_buckets: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
+
+multi_tenancy_enabled: false

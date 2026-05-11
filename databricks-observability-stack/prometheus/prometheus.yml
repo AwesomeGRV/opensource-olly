@@ -1,0 +1,173 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'databricks-simulated'
+    environment: 'production'
+    region: 'us-west-2'
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Pushgateway for custom metrics
+  - job_name: 'pushgateway'
+    honor_labels: true
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+
+  # Node Exporter - System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # cAdvisor - Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # OpenTelemetry Collector
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8888']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Grafana Metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Loki Metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Tempo Metrics
+  - job_name: 'tempo'
+    static_configs:
+      - targets: ['tempo:3200']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Alertmanager Metrics
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Kafka Metrics
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9308']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Redis Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # PostgreSQL Metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:9187']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Simulated Databricks Clusters
+  - job_name: 'databricks-clusters'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks Jobs
+  - job_name: 'databricks-jobs'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks Notebooks
+  - job_name: 'databricks-notebooks'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks SQL Warehouses
+  - job_name: 'databricks-sql-warehouses'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks Streaming
+  - job_name: 'databricks-streaming'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks DBFS
+  - job_name: 'databricks-dbfs'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks Unity Catalog
+  - job_name: 'databricks-unity-catalog'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks MLflow
+  - job_name: 'databricks-mlflow'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Simulated Databricks Feature Store
+  - job_name: 'databricks-feature-store'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
